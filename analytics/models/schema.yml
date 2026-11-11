@@ -1,0 +1,61 @@
+version: 2
+models:
+  - name: stg_invoices
+    description: "One row per source invoice, amounts kept in original currency."
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+      - name: supplier_id
+        data_tests: [not_null]
+      - name: status
+        data_tests:
+          - accepted_values:
+              values: ['PAID','PENDING','APPROVED']
+  - name: dim_suppliers
+    description: "Grain: one current supplier."
+    columns:
+      - name: supplier_id
+        data_tests: [unique, not_null]
+  - name: dim_brands
+    description: "Grain: one fictional brand."
+    columns:
+      - name: brand_id
+        data_tests: [unique, not_null]
+  - name: fct_invoices
+    description: "Grain: one source invoice, including the control outcome."
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+      - name: supplier_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_suppliers')
+              field: supplier_id
+      - name: brand_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_brands')
+              field: brand_id
+      - name: control_status
+        data_tests:
+          - accepted_values:
+              values: ['PASS','DUPLICATE','MISSING_PO','PO_MISMATCH','OVER_PO_LIMIT']
+  - name: fct_budget_actuals
+    description: "Grain: brand x YYYY-MM x category."
+    columns:
+      - name: brand_id
+        data_tests: [not_null]
+      - name: budget_month
+        data_tests: [not_null]
+  - name: fct_supplier_spend
+    description: "Grain: supplier current-state spend metrics."
+    columns:
+      - name: supplier_id
+        data_tests: [unique, not_null]
+  - name: fct_data_quality
+    description: "Grain: control type, summarized counts and affected spend."
+    columns:
+      - name: control_status
+        data_tests: [unique, not_null]
