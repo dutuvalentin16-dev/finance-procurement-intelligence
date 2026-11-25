@@ -1,0 +1,16 @@
+// Optional Qlik Sense adaptation. Upload generated CSVs to a data connection named SyntheticData; configure the lib path to match your environment.
+// Use a single comparison fact to avoid synthetic keys from multiple shared fields.
+Comparison:
+LOAD Date(Date#(day,'YYYY-MM-DD')) AS MonthStart, region_id, service_id,
+     actual_cents, budget_cents, variance_cents
+FROM [lib://SyntheticData/reporting.csv] (txt, utf8, embedded labels, delimiter is ',', msq);
+Regions:
+LOAD region_id, region FROM [lib://SyntheticData/dim_region.csv] (txt, utf8, embedded labels, delimiter is ',', msq);
+Services:
+LOAD service_id, service FROM [lib://SyntheticData/dim_service.csv] (txt, utf8, embedded labels, delimiter is ',', msq);
+Calendar:
+LOAD DISTINCT MonthStart, Year(MonthStart) AS ReportYear, Month(MonthStart) AS ReportMonth RESIDENT Comparison;
+// Example chart measures (create in the UI):
+// Sum(actual_cents)/100
+// If(Sum(budget_cents)<>0, Sum(variance_cents)/Sum(budget_cents))
+// Sum({<ReportYear={2025}>} actual_cents)/100

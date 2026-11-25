@@ -1,0 +1,10 @@
+-- Create each measure individually in Power BI Desktop.
+Actual EUR = DIVIDE(SUM(fact_actual[amount_cents]), 100)
+Budget EUR = DIVIDE(SUM(fact_budget[amount_cents]), 100)
+Variance EUR = [Actual EUR] - [Budget EUR]
+Variance % = DIVIDE([Variance EUR], [Budget EUR])
+Actual PY EUR = CALCULATE([Actual EUR], SAMEPERIODLASTYEAR(dim_date[day]))
+YoY % = IF(NOT ISBLANK([Actual PY EUR]), DIVIDE([Actual EUR]-[Actual PY EUR], [Actual PY EUR]))
+Actual YTD EUR = TOTALYTD([Actual EUR], dim_date[day])
+Budget YTD EUR = TOTALYTD([Budget EUR], dim_date[day])
+YTD Variance EUR = [Actual YTD EUR] - [Budget YTD EUR]
